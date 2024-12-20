@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cesmin.todo.exception.CustomException;
 import com.cesmin.todo.todo.model.Todo;
 import com.cesmin.todo.todo.service.TodoService;
-import com.cesmin.todo.user.model.User;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,13 +36,12 @@ public class TodoController {
 
         List<Todo> todos = todoService.findAllTodos();
         response.put("message", "Todo list retrieved");
-        response.put("status", HttpStatus.OK.value());
         response.put("data", todos);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // 새로운 Todo 생성
+    // Todo 생성
     @PostMapping("/create")
     public ResponseEntity<Map<String, Object>> addTodo(@RequestBody Todo todoRequest) {
 
@@ -52,50 +51,55 @@ public class TodoController {
             Todo createdTodo = todoService.createTodo(todoRequest);
 
             response.put("message", "Todo created");
-            response.put("status", HttpStatus.CREATED.value());
-            response.put("data", createdTodo); // 생성된 유저 정보도 응답에 포함 가능
+            response.put("data", createdTodo);
 
             return new ResponseEntity<>(response, HttpStatus.CREATED);
 
-        } catch (IllegalArgumentException e) {
+        } catch (CustomException e) {
             response.put("message", e.getMessage());
-            response.put("status", HttpStatus.BAD_REQUEST.value());
 
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, e.getHttpStatus());
         }
-
-        // Todo createdTodo = todoService.createTodo(todoRequest);
-
-        // return ResponseEntity.ok(createdTodo);
     }
 
-    // Todo 부분 업데이트 (PATCH)
+    // Todo 업데이트
     @PatchMapping("/update/{todoId}")
-    public ResponseEntity<Todo> updateTodo(@PathVariable("todoId") Long todoId, @RequestBody Todo todoRequest) {
+    public ResponseEntity<Map<String, Object>> updateTodo(@PathVariable("todoId") Long todoId,
+            @RequestBody Todo todoRequest) {
 
-        Todo updatedTodo = todoService.updateTodo(todoId, todoRequest);
+        Map<String, Object> response = new HashMap<>();
 
-        if (updatedTodo != null) {
+        try {
+            Todo updatedTodo = todoService.updateTodo(todoId, todoRequest);
 
-            return ResponseEntity.ok(updatedTodo);
-        } else {
+            response.put("message", "Todo updated");
+            response.put("data", updatedTodo);
 
-            return ResponseEntity.notFound().build(); // 리소스가 없으면 404 반환
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (CustomException e) {
+            response.put("message", e.getMessage());
+
+            return new ResponseEntity<>(response, e.getHttpStatus());
         }
     }
 
     // Todo 삭제
     @DeleteMapping("/delete/{todoId}")
-    public ResponseEntity<Void> deleteTodo(@PathVariable("todoId") Long todoId) {
+    public ResponseEntity<Map<String, Object>> deleteTodo(@PathVariable("todoId") Long todoId) {
 
-        boolean isDeleted = todoService.deleteTodo(todoId);
+        Map<String, Object> response = new HashMap<>();
 
-        if (isDeleted) {
+        try {
+            todoService.deleteTodo(todoId);
 
-            return ResponseEntity.noContent().build();
-        } else {
+            response.put("message", "Todo updated");
 
-            return ResponseEntity.notFound().build();
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (CustomException e) {
+            response.put("message", e.getMessage());
+
+            return new ResponseEntity<>(response, e.getHttpStatus());
         }
     }
 }

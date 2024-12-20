@@ -3,8 +3,10 @@ package com.cesmin.todo.todo.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.cesmin.todo.exception.CustomException;
 import com.cesmin.todo.todo.model.Todo;
 import com.cesmin.todo.todo.repository.TodoRepository;
 
@@ -26,10 +28,10 @@ public class TodoService {
     public Todo createTodo(Todo todoRequest) {
 
         if (todoRequest.getTitle() == null || todoRequest.getTitle().trim() == "") {
-            throw new IllegalArgumentException("Title is required");
+            throw new CustomException(HttpStatus.BAD_REQUEST, "Title is required");
         }
         if (todoRequest.getContents() == null || todoRequest.getContents().trim() == "") {
-            throw new IllegalArgumentException("Contents is required");
+            throw new CustomException(HttpStatus.BAD_REQUEST, "Contents is required");
         }
 
         return todoRepository.save(todoRequest);
@@ -41,39 +43,43 @@ public class TodoService {
         // 해당 Todo가 존재하는지 확인
         Optional<Todo> optionalTodo = todoRepository.findById(todoId);
 
-        if (optionalTodo.isPresent()) {
-            Todo existingTodo = optionalTodo.get();
-
-            // 부분 업데이트: 필드가 null이 아닌 경우에만 업데이트
-            if (todoRequest.getTitle() != null) {
-                existingTodo.setTitle(todoRequest.getTitle());
-            }
-            if (todoRequest.getContents() != null) {
-                existingTodo.setContents(todoRequest.getContents());
-            }
-            if (todoRequest.getAuthor() != null) {
-                existingTodo.setAuthor(todoRequest.getAuthor());
-            }
-
-            // 업데이트된 Todo 저장
-            return todoRepository.save(existingTodo);
-        } else {
-
-            return null; // Todo가 존재하지 않으면 null 반환
+        if (!optionalTodo.isPresent()) {
+            throw new CustomException(HttpStatus.NOT_FOUND, "Todo not found");
         }
+
+        if (todoRequest.getTitle() == null || todoRequest.getTitle().trim() == "") {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "Title is required");
+        }
+        if (todoRequest.getContents() == null || todoRequest.getContents().trim() == "") {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "Contents is required");
+        }
+
+        Todo existingTodo = optionalTodo.get();
+
+        // 부분 업데이트: 필드가 null이 아닌 경우에만 업데이트
+        if (todoRequest.getTitle() != null) {
+            existingTodo.setTitle(todoRequest.getTitle());
+        }
+        if (todoRequest.getContents() != null) {
+            existingTodo.setContents(todoRequest.getContents());
+        }
+        if (todoRequest.getAuthor() != null) {
+            existingTodo.setAuthor(todoRequest.getAuthor());
+        }
+
+        // 업데이트된 Todo 저장
+        return todoRepository.save(existingTodo);
     }
 
     // Todo 삭제
-    public boolean deleteTodo(Long todoId) {
+    public void deleteTodo(Long todoId) {
+
         Optional<Todo> optionalTodo = todoRepository.findById(todoId);
 
-        if (optionalTodo.isPresent()) {
-            todoRepository.delete(optionalTodo.get());
-
-            return true;
-        } else {
-
-            return false;
+        if (!optionalTodo.isPresent()) {
+            throw new CustomException(HttpStatus.NOT_FOUND, "Todo not found");
         }
+
+        todoRepository.deleteById(todoId);
     }
 }
