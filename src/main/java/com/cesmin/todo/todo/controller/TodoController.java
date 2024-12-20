@@ -93,7 +93,7 @@ public class TodoController {
         try {
             todoService.deleteTodo(todoId);
 
-            response.put("message", "Todo updated");
+            response.put("message", "Todo deleted");
 
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (CustomException e) {

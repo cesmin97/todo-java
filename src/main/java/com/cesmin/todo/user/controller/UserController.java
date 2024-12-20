@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cesmin.todo.exception.CustomException;
 import com.cesmin.todo.user.model.User;
 import com.cesmin.todo.user.service.UserService;
 
@@ -35,7 +36,6 @@ public class UserController {
 
         List<User> users = userService.findAllUsers();
         response.put("message", "User list retrieved");
-        response.put("status", HttpStatus.OK.value());
         response.put("data", users);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -51,46 +51,55 @@ public class UserController {
             User createdUser = userService.createUser(userRequest);
 
             response.put("message", "User created");
-            response.put("status", HttpStatus.CREATED.value());
             response.put("data", createdUser); // 생성된 유저 정보도 응답에 포함 가능
 
             return new ResponseEntity<>(response, HttpStatus.CREATED);
 
-        } catch (IllegalArgumentException e) {
+        } catch (CustomException e) {
             response.put("message", e.getMessage());
-            response.put("status", HttpStatus.BAD_REQUEST.value());
 
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, e.getHttpStatus());
         }
     }
 
     // User 부분 업데이트 (PATCH)
     @PatchMapping("/update/{userId}")
-    public ResponseEntity<User> updateUser(@PathVariable("userId") Long userId, @RequestBody User userRequest) {
+    public ResponseEntity<Map<String, Object>> updateUser(@PathVariable("userId") Long userId,
+            @RequestBody User userRequest) {
 
-        User updatedUser = userService.updateUser(userId, userRequest);
+        Map<String, Object> response = new HashMap<>();
 
-        if (updatedUser != null) {
+        try {
+            User updatedUser = userService.updateUser(userId, userRequest);
 
-            return ResponseEntity.ok(updatedUser);
-        } else {
+            response.put("message", "User updated");
+            response.put("data", updatedUser);
 
-            return ResponseEntity.notFound().build(); // 리소스가 없으면 404 반환
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (CustomException e) {
+            response.put("message", e.getMessage());
+
+            return new ResponseEntity<>(response, e.getHttpStatus());
         }
     }
 
     // User 삭제
     @DeleteMapping("/delete/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable("userId") Long userId) {
+    public ResponseEntity<Map<String, Object>> deleteUser(@PathVariable("userId") Long userId) {
 
-        boolean isDeleted = userService.deleteUser(userId);
+        Map<String, Object> response = new HashMap<>();
 
-        if (isDeleted) {
+        try {
+            userService.deleteUser(userId);
 
-            return ResponseEntity.noContent().build();
-        } else {
+            response.put("message", "User deleted");
 
-            return ResponseEntity.notFound().build();
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (CustomException e) {
+            response.put("message", e.getMessage());
+
+            return new ResponseEntity<>(response, e.getHttpStatus());
         }
     }
 }
