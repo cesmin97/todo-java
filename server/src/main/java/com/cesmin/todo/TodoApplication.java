@@ -24,9 +24,9 @@ public class TodoApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		List<Todo> todoList = List.of(
-				new Todo("Chillin", "감자네 집에서 chillin 하기~", "Seongmin Hong"),
-				new Todo("화장실 청소", "변기, 거울 청소", "Seongmin Hong"),
-				new Todo("감자똥꾸멍", "감자 똥구멍 불쌍해.. 방귀냄새 뒤져...", "Seongmin Hong"));
+				new Todo("test title 1", "test contents 1", "Seongmin Hong"),
+				new Todo("test title 2", "test contents 2", "Seongmin Hong"),
+				new Todo("test title 3", "test contents 3", "Seongmin Hong"));
 
 		todoRepository.saveAll(todoList);
 	}

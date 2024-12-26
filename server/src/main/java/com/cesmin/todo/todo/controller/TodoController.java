@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -30,7 +29,6 @@ public class TodoController {
     private final TodoService todoService;
 
     // 전체 Todo 목록 조회
-    @CrossOrigin(origins = "http://http://172.30.1.99/:3000")
     @GetMapping("/list")
     public ResponseEntity<Map<String, Object>> getTodos() {
 
